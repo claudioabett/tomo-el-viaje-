@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>¿Tomo el viaje? · Calculadora Uber Coquimbo</title>
+<meta name="description" content="Calcula tu costo real por km y si conviene aceptar el viaje de Uber.">
+<meta name="theme-color" content="#13171E">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="¿Tomo el viaje?">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#13171E; --panel:#1B212B; --panel2:#232C39; --line:rgba(255,255,255,.09);
+    --ink:#ECF1F6; --mut:#8C99A8; --mut2:#5E6A78;
+    --amber:#F2A340; --green:#46C088; --gold:#E8B23A; --red:#E85C50;
+    --disp:'Space Grotesk',sans-serif; --body:'Inter',sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink); font-family:var(--body);
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+    padding:max(24px,env(safe-area-inset-top)) 16px calc(56px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:520px; margin:0 auto}
+  header{margin:8px 0 26px}
+  .topbar{display:flex; justify-content:space-between; align-items:center; gap:12px}
+  .kicker{font-family:var(--disp); font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--amber); font-weight:600}
+  .install{background:transparent; border:1px solid var(--amber); color:var(--amber); font-family:var(--body); font-size:12.5px; font-weight:600; padding:7px 13px; border-radius:9px; cursor:pointer; white-space:nowrap}
+  .install:hover{background:rgba(242,163,64,.12)}
+  .install:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+  h1{font-family:var(--disp); font-weight:700; font-size:30px; margin:10px 0 4px; letter-spacing:-.01em}
+  .sub{color:var(--mut); font-size:14px; margin:0}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:20px; margin-bottom:18px}
+  .card h2{font-family:var(--disp); font-weight:600; font-size:16px; margin:0 0 2px; display:flex; align-items:center; gap:9px}
+  .card h2 .n{width:22px;height:22px;border-radius:7px;background:var(--panel2);color:var(--amber);font-size:12px;display:flex;align-items:center;justify-content:center;font-weight:600}
+  .card .hint{color:var(--mut2); font-size:12.5px; margin:0 0 18px}
+  .row{margin:0 0 18px}
+  .row:last-child{margin-bottom:0}
+  .rlabel{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; gap:10px}
+  .rlabel span:first-child{font-size:13.5px; color:var(--mut)}
+  .val{font-family:var(--disp); font-weight:600; font-size:16px; color:var(--ink); white-space:nowrap}
+  input[type=range]{-webkit-appearance:none; appearance:none; width:100%; height:5px; border-radius:5px; background:var(--panel2); outline:none; margin:0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; border-radius:50%; background:var(--amber); cursor:pointer; border:3px solid var(--bg)}
+  input[type=range]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--amber); cursor:pointer; border:3px solid var(--bg)}
+  input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(242,163,64,.35)}
+  .num{width:100%; background:var(--panel2); border:1px solid var(--line); border-radius:10px; color:var(--ink); font-family:var(--disp); font-weight:500; font-size:17px; padding:11px 13px; outline:none}
+  .num:focus{border-color:var(--amber)}
+  .num::placeholder{color:var(--mut2); font-weight:400}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:13px}
+  .field label{display:block; font-size:12.5px; color:var(--mut); margin-bottom:6px}
+  .strip{background:var(--panel2); border-radius:12px; padding:15px 16px; margin-top:4px}
+  .strip .big{font-family:var(--disp); font-weight:700; font-size:13px; color:var(--mut); letter-spacing:.02em}
+  .strip .umbral{font-family:var(--disp); font-weight:700; font-size:30px; color:var(--amber); line-height:1.1; margin:3px 0 2px}
+  .strip .umbral small{font-size:15px; color:var(--mut); font-weight:500}
+  .break{display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:12px; font-size:12.5px; color:var(--mut2)}
+  .break b{color:var(--mut); font-weight:500}
+  .toggle{display:inline-flex; background:var(--panel2); border-radius:9px; padding:3px; margin-bottom:16px}
+  .toggle button{border:none; background:transparent; color:var(--mut); font-family:var(--body); font-size:12.5px; padding:7px 12px; border-radius:7px; cursor:pointer}
+  .toggle button.on{background:var(--amber); color:#241600; font-weight:600}
+  .verdict{display:flex; align-items:center; gap:16px; background:var(--panel2); border-radius:12px; padding:16px 18px; margin-top:6px}
+  .lights{display:flex; flex-direction:column; gap:7px}
+  .lights i{width:14px; height:14px; border-radius:50%; background:#2C3543; transition:.2s}
+  .lights i.r.act{background:var(--red); box-shadow:0 0 12px var(--red)}
+  .lights i.a.act{background:var(--gold); box-shadow:0 0 12px var(--gold)}
+  .lights i.g.act{background:var(--green); box-shadow:0 0 12px var(--green)}
+  .vtext .word{font-family:var(--disp); font-weight:700; font-size:24px; letter-spacing:.01em}
+  .vtext .why{font-size:13px; color:var(--mut); margin-top:1px}
+  .stats{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:14px}
+  .stat{background:var(--panel2); border-radius:11px; padding:12px 12px}
+  .stat .l{font-size:11px; color:var(--mut2); letter-spacing:.02em}
+  .stat .v{font-family:var(--disp); font-weight:600; font-size:18px; margin-top:3px}
+  .bands{display:flex; flex-wrap:wrap; gap:5px 12px; margin-top:13px; font-size:11px; color:var(--mut2)}
+  .bands span{display:flex; align-items:center; gap:5px}
+  .bands i{width:8px;height:8px;border-radius:50%;display:inline-block}
+  footer{color:var(--mut2); font-size:12px; line-height:1.6; margin-top:6px}
+  footer b{color:var(--mut)}
+  @media (max-width:420px){ h1{font-size:26px} .stats{grid-template-columns:1fr} }
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="topbar">
+      <div class="kicker">Región de Coquimbo</div>
+      <button id="install" class="install" hidden>Instalar app</button>
+    </div>
+    <h1>¿Tomo el viaje?</h1>
+    <p class="sub">Calcula tu costo real por km y si conviene aceptar el viaje que te ofrece la app.</p>
+  </header>
+
+  <section class="card">
+    <h2><span class="n">1</span> Mi perfil de costos</h2>
+    <p class="hint">Ajústalo a tu auto. Queda guardado en tu teléfono.</p>
+
+    <div class="row">
+      <div class="rlabel"><span>Precio bencina</span><span class="val" id="vBenc">$1.550 /L</span></div>
+      <input type="range" id="benc" min="1000" max="2000" step="10" value="1550" aria-label="Precio de la bencina por litro">
+    </div>
+    <div class="row">
+      <div class="rlabel"><span>Rendimiento del auto</span><span class="val" id="vRend">11 km/L</span></div>
+      <input type="range" id="rend" min="6" max="20" step="0.5" value="11" aria-label="Rendimiento del auto en kilómetros por litro">
+    </div>
+    <div class="row">
+      <div class="rlabel"><span>Desgaste por km</span><span class="val" id="vDesg">$60 /km</span></div>
+      <input type="range" id="desg" min="0" max="150" step="5" value="60" aria-label="Desgaste por kilómetro">
+    </div>
+    <div class="row">
+      <div class="rlabel"><span>Km muertos (vacío, ida y vuelta)</span><span class="val" id="vMuerto">40%</span></div>
+      <input type="range" id="muerto" min="0" max="80" step="5" value="40" aria-label="Porcentaje de kilómetros muertos">
+    </div>
+
+    <div class="strip">
+      <div class="big">TU UMBRAL DE EQUILIBRIO</div>
+      <div class="umbral"><span id="umbral">$280</span> <small>neto por km pagado</small></div>
+      <div class="break">
+        <span>Bencina: <b id="bBenc">$141/km</b></span>
+        <span>Desgaste: <b id="bDesg">$60/km</b></span>
+        <span>Factor km muerto: <b id="bMuerto">×1,40</b></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">2</span> Este viaje</h2>
+    <p class="hint">Pon los datos que te muestra la app antes de aceptar.</p>
+
+    <div class="toggle" id="tg">
+      <button data-mode="neto" class="on">Ganancia neta</button>
+      <button data-mode="bruto">Tarifa total</button>
+    </div>
+
+    <div class="grid2" style="margin-bottom:14px">
+      <div class="field"><label id="lblGan">Ganancia que te deja ($)</label><input class="num" id="gan" type="number" inputmode="numeric" placeholder="4.350"></div>
+      <div class="field"><label>Minutos del viaje</label><input class="num" id="min" type="number" inputmode="numeric" value="20"></div>
+      <div class="field"><label>Km del viaje (con pasajero)</label><input class="num" id="kmv" type="number" inputmode="decimal" placeholder="6"></div>
+      <div class="field"><label>Km para ir a buscarlo</label><input class="num" id="kmb" type="number" inputmode="decimal" value="2"></div>
+    </div>
+
+    <div class="verdict">
+      <div class="lights"><i class="r" id="lr"></i><i class="a" id="la"></i><i class="g" id="lg"></i></div>
+      <div class="vtext"><div class="word" id="word">Ingresa el viaje</div><div class="why" id="why">Necesito ganancia y km del viaje.</div></div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="l">Utilidad limpia</div><div class="v" id="sUtil">—</div></div>
+      <div class="stat"><div class="l">$ por hora</div><div class="v" id="sHora">—</div></div>
+      <div class="stat"><div class="l">Neto por km</div><div class="v" id="sKm">—</div></div>
+    </div>
+
+    <div class="bands">
+      <span><i style="background:var(--green)"></i>≥ $9.000/h tomar</span>
+      <span><i style="background:var(--gold)"></i>$5–9 mil marginal</span>
+      <span><i style="background:var(--red)"></i>&lt; $5.000/h no</span>
+    </div>
+  </section>
+
+  <footer>
+    <b>Cómo leerlo.</b> El umbral es lo mínimo que debe dejarte cada km con pasajero para no perder plata. La comisión de Uber (~25%) ya viene descontada en la "ganancia neta"; si pones la tarifa total, la app la descuenta. Valores referenciales: ajústalos a tu auto y a la bencina de la semana.
+  </footer>
+</div>
+
+<script>
+(function(){
+  var clp = new Intl.NumberFormat('es-CL');
+  var f = function(n){ return '$' + clp.format(Math.round(n)); };
+  var COMISION = 0.25;
+  var mode = 'neto';
+  var el = function(id){ return document.getElementById(id); };
+  var inputs = ['benc','rend','desg','muerto','gan','min','kmv','kmb'].map(el);
+
+  el('tg').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if(!b) return;
+    mode = b.dataset.mode;
+    [].forEach.call(this.children, function(c){ c.classList.toggle('on', c===b); });
+    el('lblGan').textContent = mode==='neto' ? 'Ganancia que te deja ($)' : 'Tarifa total del pasajero ($)';
+    recalc();
+  });
+
+  function recalc(){
+    var benc=+el('benc').value, rend=+el('rend').value, desg=+el('desg').value, muerto=+el('muerto').value;
+    var bencKm = benc / rend;
+    var costoKmManejado = bencKm + desg;
+    var factor = 1 + muerto/100;
+    var umbral = costoKmManejado * factor;
+
+    el('vBenc').textContent = f(benc) + ' /L';
+    el('vRend').textContent = rend.toLocaleString('es-CL') + ' km/L';
+    el('vDesg').textContent = f(desg) + ' /km';
+    el('vMuerto').textContent = muerto + '%';
+    el('umbral').textContent = f(umbral);
+    el('bBenc').textContent = f(bencKm) + '/km';
+    el('bDesg').textContent = f(desg) + '/km';
+    el('bMuerto').textContent = '×' + factor.toFixed(2).replace('.', ',');
+
+    var gan=parseFloat(el('gan').value), min=parseFloat(el('min').value);
+    var kmv=parseFloat(el('kmv').value), kmb=parseFloat(el('kmb').value);
+    if(isNaN(kmb)) kmb = 0;
+
+    var lr=el('lr'), la=el('la'), lg=el('lg');
+    lr.className='r'; la.className='a'; lg.className='g';
+
+    if(isNaN(gan) || isNaN(kmv) || kmv<=0){
+      el('word').textContent='Ingresa el viaje';
+      el('word').style.color='var(--ink)';
+      el('why').textContent='Necesito ganancia y km del viaje.';
+      el('sUtil').textContent='—'; el('sUtil').style.color='var(--ink)';
+      el('sHora').textContent='—'; el('sKm').textContent='—';
+      return;
+    }
+
+    var ganNeta = mode==='neto' ? gan : gan*(1-COMISION);
+    var kmTotal = kmv + kmb;
+    var costo = kmTotal * costoKmManejado;
+    var util = ganNeta - costo;
+    var netoKm = util / kmv;
+    var porHora = (!isNaN(min) && min>0) ? util/(min/60) : null;
+
+    el('sUtil').textContent = f(util);
+    el('sUtil').style.color = util>0 ? 'var(--green)' : 'var(--red)';
+    el('sHora').textContent = porHora!=null ? f(porHora) : '—';
+    el('sKm').textContent = f(netoKm);
+
+    var word, why, light;
+    if(util<=0){ light='r'; word='No tomar'; why='Pierdes plata: el costo se come la tarifa.'; }
+    else if(porHora!=null){
+      if(porHora<5000){ light='r'; word='No tomar'; why='Rinde menos de $5.000 la hora.'; }
+      else if(porHora<9000){ light='a'; word='Marginal'; why='Acéptalo solo si te deja en zona buena.'; }
+      else { light='g'; word='Tomar'; why='Buen retorno por hora. Dale.'; }
+    } else {
+      if(netoKm<umbral){ light='r'; word='No tomar'; why='Bajo tu umbral por km.'; }
+      else if(netoKm<umbral*1.4){ light='a'; word='Marginal'; why='Apenas sobre el umbral.'; }
+      else { light='g'; word='Tomar'; why='Cómodo sobre tu umbral.'; }
+    }
+    (light==='r'?lr:light==='a'?la:lg).classList.add('act');
+    el('word').textContent = word;
+    el('word').style.color = light==='r'?'var(--red)':light==='a'?'var(--gold)':'var(--green)';
+    el('why').textContent = why;
+  }
+
+  inputs.forEach(function(i){ i.addEventListener('input', recalc); });
+  recalc();
+})();
+
+// --- PWA: service worker + install prompt ---
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+}
+(function(){
+  var deferred = null;
+  var btn = document.getElementById('install');
+  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferred = e; if(btn) btn.hidden = false; });
+  if(btn) btn.addEventListener('click', function(){
+    if(!deferred) return;
+    deferred.prompt();
+    deferred.userChoice.then(function(){ deferred = null; btn.hidden = true; });
+  });
+  window.addEventListener('appinstalled', function(){ if(btn) btn.hidden = true; });
+})();
+</script>
+</body>
+</html>
