@@ -1,5 +1,5 @@
 // Service worker: ¿Tomo el viaje? — offline-first
-const CACHE = 'tomo-viaje-v1';
+const CACHE = 'tomo-viaje-v4';
 const ASSETS = [
   './',
   './index.html',

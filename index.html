@@ -79,6 +79,31 @@
   .bands{display:flex; flex-wrap:wrap; gap:5px 12px; margin-top:13px; font-size:11px; color:var(--mut2)}
   .bands span{display:flex; align-items:center; gap:5px}
   .bands i{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .savebtn{width:100%; margin-top:16px; background:var(--amber); color:#241600; border:none; border-radius:11px; font-family:var(--disp); font-weight:700; font-size:15px; padding:13px; cursor:pointer}
+  .savebtn:active{transform:translateY(1px)}
+  .savebtn.ok{background:var(--green); color:#06231a}
+  .savebtn.err{background:var(--red); color:#2a0d0a}
+  .bigstat{background:var(--panel2); border-radius:12px; padding:16px; margin-bottom:14px}
+  .bigstat .l{font-family:var(--disp); font-weight:700; font-size:13px; color:var(--mut); letter-spacing:.02em}
+  .bigstat .v{font-family:var(--disp); font-weight:700; font-size:32px; color:var(--amber); line-height:1.1; margin-top:3px}
+  .triplist{margin-top:6px; display:flex; flex-direction:column; gap:7px}
+  .trip{display:flex; align-items:center; gap:10px; background:var(--panel2); border-radius:10px; padding:10px 12px}
+  .trip .t{font-size:12px; color:var(--mut2); width:64px; flex:none; font-family:var(--disp)}
+  .trip .g{font-family:var(--disp); font-weight:600; font-size:14px; color:var(--ink)}
+  .trip .u{margin-left:auto; font-family:var(--disp); font-weight:600; font-size:14px}
+  .trip .x{flex:none; width:28px; height:28px; border:none; background:transparent; color:var(--mut2); font-size:19px; line-height:1; cursor:pointer; border-radius:7px}
+  .trip .x:hover{background:rgba(255,255,255,.06); color:var(--red)}
+  .empty{color:var(--mut2); font-size:13px; text-align:center; padding:14px 0}
+  .clearbtn{margin-top:12px; background:transparent; border:1px solid var(--line); color:var(--mut); font-family:var(--body); font-size:12.5px; padding:8px 13px; border-radius:9px; cursor:pointer}
+  .clearbtn:hover{border-color:var(--red); color:var(--red)}
+  .shiftbar{display:flex; align-items:center; gap:13px; margin-bottom:14px}
+  .shiftbtn{border:none; border-radius:11px; font-family:var(--disp); font-weight:700; font-size:14px; padding:11px 18px; cursor:pointer; background:var(--green); color:#06231a}
+  .shiftbtn.on{background:var(--red); color:#2a0d0a}
+  .shiftbtn:active{transform:translateY(1px)}
+  .shiftlive{font-family:var(--disp); font-weight:600; font-size:15px; color:var(--ink)}
+  .shiftlive .dot{display:inline-block; width:9px; height:9px; border-radius:50%; background:var(--red); margin-right:7px; vertical-align:middle; animation:pulse 1.4s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+  .enviaje{color:var(--mut2); font-size:12px; margin-top:10px}
   footer{color:var(--mut2); font-size:12px; line-height:1.6; margin-top:6px}
   footer b{color:var(--mut)}
   @media (max-width:420px){ h1{font-size:26px} .stats{grid-template-columns:1fr} }
@@ -160,6 +185,38 @@
       <span><i style="background:var(--gold)"></i>$5–9 mil marginal</span>
       <span><i style="background:var(--red)"></i>&lt; $5.000/h no</span>
     </div>
+
+    <button id="saveTrip" class="savebtn">Guardar viaje en mi registro</button>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">3</span> Mi registro</h2>
+    <p class="hint">Inicia el turno al conectarte y guarda cada viaje. Todo queda en tu teléfono.</p>
+
+    <div class="shiftbar">
+      <button id="shiftBtn" class="shiftbtn">Iniciar turno</button>
+      <span id="shiftLive" class="shiftlive" hidden></span>
+    </div>
+
+    <div class="toggle" id="periodTabs" style="margin-bottom:14px">
+      <button data-p="hoy" class="on">Hoy</button>
+      <button data-p="semana">Esta semana</button>
+    </div>
+
+    <div class="bigstat">
+      <div class="l">$ POR HORA REAL</div>
+      <div class="v" id="rHoraReal">—</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="l">Utilidad limpia</div><div class="v" id="rUtil">$0</div></div>
+      <div class="stat"><div class="l">Horas online</div><div class="v" id="rOnline">0,0</div></div>
+      <div class="stat"><div class="l">Viajes</div><div class="v" id="rN">0</div></div>
+    </div>
+    <div class="enviaje" id="enViaje">En viaje: —</div>
+
+    <div id="tripList" class="triplist"></div>
+    <button id="clearLog" class="clearbtn" hidden>Borrar registro</button>
   </section>
 
   <footer>
@@ -184,8 +241,28 @@
     recalc();
   });
 
+  var STORE = 'tomoViajePerfil';
+  function savePerfil(){
+    try{ localStorage.setItem(STORE, JSON.stringify({
+      benc: el('benc').value, rend: el('rend').value,
+      desg: el('desg').value, muerto: el('muerto').value, mode: mode
+    })); }catch(e){}
+  }
+  function loadPerfil(){
+    try{
+      var s = JSON.parse(localStorage.getItem(STORE)); if(!s) return;
+      ['benc','rend','desg','muerto'].forEach(function(k){ if(s[k]!=null) el(k).value = s[k]; });
+      if(s.mode){
+        mode = s.mode;
+        [].forEach.call(el('tg').children, function(c){ c.classList.toggle('on', c.dataset.mode===mode); });
+        el('lblGan').textContent = mode==='neto' ? 'Ganancia que te deja ($)' : 'Tarifa total del pasajero ($)';
+      }
+    }catch(e){}
+  }
+
   function recalc(){
     var benc=+el('benc').value, rend=+el('rend').value, desg=+el('desg').value, muerto=+el('muerto').value;
+    savePerfil();
     var bencKm = benc / rend;
     var costoKmManejado = bencKm + desg;
     var factor = 1 + muerto/100;
@@ -246,7 +323,163 @@
   }
 
   inputs.forEach(function(i){ i.addEventListener('input', recalc); });
+  loadPerfil();
   recalc();
+})();
+
+// --- Registro de viajes (guardado local) ---
+(function(){
+  var clp = new Intl.NumberFormat('es-CL');
+  var f = function(n){ return '$' + clp.format(Math.round(n)); };
+  var LOG = 'tomoViajeLog';
+  var SHIFTS = 'tomoViajeTurnos';
+  var period = 'hoy';
+  var gid = function(id){ return document.getElementById(id); };
+
+  function read(){ try{ return JSON.parse(localStorage.getItem(LOG)) || []; }catch(e){ return []; } }
+  function write(a){ try{ localStorage.setItem(LOG, JSON.stringify(a)); }catch(e){} }
+
+  function readSh(){ try{ return JSON.parse(localStorage.getItem(SHIFTS)) || []; }catch(e){ return []; } }
+  function writeSh(a){ try{ localStorage.setItem(SHIFTS, JSON.stringify(a)); }catch(e){} }
+  function activeSh(){ var a=readSh(), l=a[a.length-1]; return (l && !l.end) ? l : null; }
+  function fmtDur(ms){ var s=Math.floor(ms/1000), h=Math.floor(s/3600), m=Math.floor((s%3600)/60); return h+':'+pad(m)+':'+pad(s%60); }
+  function onlineMs(from){
+    var now=Date.now(), tot=0;
+    readSh().forEach(function(sh){ var end=sh.end||now; tot += Math.max(0, Math.min(end,now) - Math.max(sh.start, from)); });
+    return tot;
+  }
+
+  function costoKm(){
+    var benc=+gid('benc').value, rend=+gid('rend').value, desg=+gid('desg').value;
+    if(!rend) return 0;
+    return benc/rend + desg;
+  }
+  function startDay(t){ var x=new Date(t); x.setHours(0,0,0,0); return x.getTime(); }
+  function startWeek(t){ var x=new Date(t); var d=(x.getDay()+6)%7; x.setHours(0,0,0,0); x.setDate(x.getDate()-d); return x.getTime(); }
+  function pad(n){ return (n<10?'0':'')+n; }
+  function fmtTime(ts, withDay){
+    var d=new Date(ts), hm=pad(d.getHours())+':'+pad(d.getMinutes());
+    if(withDay){ var dias=['dom','lun','mar','mié','jue','vie','sáb']; return dias[d.getDay()]+' '+hm; }
+    return hm;
+  }
+
+  var flashTimer;
+  function flash(btn, txt, cls){
+    if(!btn.dataset.orig) btn.dataset.orig = btn.textContent;
+    btn.textContent = txt; btn.classList.add(cls);
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(function(){
+      btn.textContent = btn.dataset.orig; btn.classList.remove('ok'); btn.classList.remove('err');
+    }, 1500);
+  }
+
+  var saveBtn = gid('saveTrip');
+  saveBtn.addEventListener('click', function(){
+    var gan=parseFloat(gid('gan').value);
+    var kmv=parseFloat(gid('kmv').value);
+    var kmb=parseFloat(gid('kmb').value); if(isNaN(kmb)) kmb=0;
+    var min=parseFloat(gid('min').value); if(isNaN(min)) min=0;
+    if(isNaN(gan) || isNaN(kmv) || kmv<=0){ flash(saveBtn, 'Falta ganancia y km', 'err'); return; }
+    var onbtn=document.querySelector('#tg button.on');
+    var mode = onbtn ? onbtn.getAttribute('data-mode') : 'neto';
+    var ganNeta = mode==='neto' ? gan : gan*0.75;
+    var kmTotal = kmv+kmb;
+    var util = ganNeta - kmTotal*costoKm();
+    var arr=read();
+    arr.push({ ts: Date.now(), gan: Math.round(ganNeta), km: kmTotal, min: min, util: Math.round(util) });
+    write(arr);
+    gid('gan').value=''; gid('kmv').value='';
+    gid('gan').dispatchEvent(new Event('input',{bubbles:true}));
+    flash(saveBtn, 'Guardado \u2713', 'ok');
+    render();
+  });
+
+  gid('shiftBtn').addEventListener('click', function(){
+    var a=readSh(), l=a[a.length-1];
+    if(l && !l.end){ l.end = Date.now(); }
+    else { a.push({ start: Date.now(), end: null }); }
+    writeSh(a); render();
+  });
+
+  gid('periodTabs').addEventListener('click', function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    period=b.getAttribute('data-p');
+    [].forEach.call(this.children,function(c){ c.classList.toggle('on', c===b); });
+    render();
+  });
+
+  gid('tripList').addEventListener('click', function(e){
+    var x=e.target.closest('.x'); if(!x) return;
+    var ts=+x.getAttribute('data-ts');
+    write(read().filter(function(t){ return t.ts!==ts; }));
+    render();
+  });
+
+  var clearBtn=gid('clearLog'), clearArmed=false, clearTimer;
+  clearBtn.addEventListener('click', function(){
+    if(!clearArmed){
+      clearArmed=true; clearBtn.textContent='¿Seguro? Tocá de nuevo';
+      clearTimer=setTimeout(function(){ clearArmed=false; clearBtn.textContent='Borrar registro'; },2500);
+      return;
+    }
+    clearTimeout(clearTimer); clearArmed=false; clearBtn.textContent='Borrar registro';
+    write([]); render();
+  });
+
+  function renderShift(){
+    var s=activeSh(), b=gid('shiftBtn'), live=gid('shiftLive');
+    if(s){
+      b.textContent='Terminar turno'; b.classList.add('on');
+      live.hidden=false; live.innerHTML='<span class="dot"></span>'+fmtDur(Date.now()-s.start);
+    } else {
+      b.textContent='Iniciar turno'; b.classList.remove('on'); live.hidden=true;
+    }
+  }
+
+  function liveStats(){
+    var now=Date.now(), from = period==='hoy' ? startDay(now) : startWeek(now);
+    var hOnline = onlineMs(from)/3600000;
+    var sumU=0, n=0;
+    read().forEach(function(t){ if(t.ts>=from){ sumU+=t.util; n++; } });
+    gid('rOnline').textContent = hOnline.toLocaleString('es-CL',{minimumFractionDigits:1,maximumFractionDigits:1});
+    gid('rHoraReal').textContent = (n && hOnline>0) ? f(sumU/hOnline) : '—';
+  }
+
+  function render(){
+    var all=read(), now=Date.now();
+    var from = period==='hoy' ? startDay(now) : startWeek(now);
+    var rows = all.filter(function(t){ return t.ts>=from; }).sort(function(a,b){ return b.ts-a.ts; });
+    var sumU=0, sumMin=0;
+    rows.forEach(function(t){ sumU+=t.util; sumMin+=(t.min||0); });
+    var hTrip=sumMin/60;
+
+    gid('rUtil').textContent = rows.length ? f(sumU) : '$0';
+    gid('rUtil').style.color = sumU>=0 ? 'var(--green)' : 'var(--red)';
+    gid('rN').textContent = rows.length;
+    gid('enViaje').textContent = (rows.length && hTrip>0)
+      ? 'En viaje: '+f(sumU/hTrip)+'/h · '+hTrip.toLocaleString('es-CL',{minimumFractionDigits:1,maximumFractionDigits:1})+' h con pasajero'
+      : 'En viaje: —';
+
+    var list=gid('tripList');
+    if(!rows.length){
+      list.innerHTML='<div class="empty">Sin viajes en este periodo. Guarda uno desde \u201cEste viaje\u201d.</div>';
+    } else {
+      list.innerHTML = rows.slice(0,15).map(function(t){
+        var uc = t.util>=0 ? 'var(--green)' : 'var(--red)';
+        return '<div class="trip"><span class="t">'+fmtTime(t.ts, period==='semana')+'</span>'+
+               '<span class="g">'+f(t.gan)+'</span>'+
+               '<span class="u" style="color:'+uc+'">'+f(t.util)+'</span>'+
+               '<button class="x" data-ts="'+t.ts+'" aria-label="Borrar viaje">\u00d7</button></div>';
+      }).join('');
+    }
+    clearBtn.hidden = all.length===0;
+    liveStats();
+    renderShift();
+  }
+
+  setInterval(function(){ if(activeSh()){ renderShift(); liveStats(); } }, 1000);
+
+  render();
 })();
 
 // --- PWA: service worker + install prompt ---
